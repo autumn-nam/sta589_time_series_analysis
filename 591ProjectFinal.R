@@ -1,30 +1,48 @@
-install.packages("reshape2")
+######################################################################################
+# Preliminary Stage
+######################################################################################
+
+## Install and load necessary packages
+pacman::p_load(reshape2, fpp2, urca, plotly, readxl)
+
+install.packages("reshape2")     # used to reshape and melt down the data format. 
 install.packages("fpp2")
-install.packages("urc")
+install.packages("urca")
 library(reshape2)
 library(fpp2)
 library(urca)
 library(readxl)
 
-Bauman_MMC_Student_Count_Data <- read_excel("U:/STA589/Bauman MMC Student Count Data.xlsx")
+## load the data file into R
+getwd()
+Bauman_MMC_Student_Count_Data <- read_excel("C:/Users/udam0/Downloads/Bauman MMC Student Count Data.xlsx")
 
+## Reshape the data format
 longstudent <- melt(Bauman_MMC_Student_Count_Data, id.vars = "Year")
 workdata <- longstudent[,c(1,3)]
 workdata <- workdata[order(workdata$Year),]
 workdata <- workdata[,2]
 workdata <- workdata[-1]
 workdata <- workdata[-103]
-ts.Students <- ts(workdata, start = 1968, frequency = 2)
-tsStudents <- ts(workdata, start = 1968, frequency = 2)
-autoplot(ts.Students)
-ggAcf(ts.Students)
-ndiffs(ts.Students)
-summary(ur.kpss((ts.Students)))
+## Check the data to see if it has the right format without obmitting any values
+workdata
 
-d.ts.students = diff(ts.Students)
-d4.ts.students = diff(ts.Students, lag = 4)
+## Transform the data to be time series data. 
+ts.Students <- ts(workdata, start = 1968, frequency = 2)
+
+######################################################################################
+# Analysis Stage 
+######################################################################################
+autoplot(ts.Students) + ggtitle("Number of students for each semester")
+ggAcf(ts.Students)              # According to the plot, it has a trend. 
+ndiffs(ts.Students)             # Make sure it needs first differencing using function. Results says yes. 
+summary(ur.kpss((ts.Students))) # Make sure it is stationary or not. Results says it is not stationary. 
+
+d.ts.students = diff(ts.Students)            # performed first differencing 
+d4.ts.students = diff(ts.Students, lag = 4)  # performed seasonal differencing 
 
 ts.Students %>% diff(lag=4) %>% ndiffs()
+
 ggtsdisplay((ts.Students))
 ggtsdisplay(d.ts.students)
 ggtsdisplay(d4.ts.students)
